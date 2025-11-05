@@ -25,15 +25,21 @@ export default function RootLayout({
           src="https://acrobatservices.adobe.com/view-sdk/viewer.js"
           strategy="beforeInteractive"
           crossOrigin="anonymous"
-          onLoad={() => {
-            console.log('[ROOT LAYOUT] Adobe SDK script loaded successfully');
-            if ((window as any).AdobeDC) {
-              console.log('[ROOT LAYOUT] AdobeDC is available immediately');
-              document.dispatchEvent(new Event('adobe_dc_view_sdk.ready'));
-            }
-          }}
-          onError={() => {
-            console.error('[ROOT LAYOUT] Adobe SDK script failed to load');
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (window.AdobeDC) {
+                console.log('[ROOT LAYOUT] Adobe SDK already available');
+                document.dispatchEvent(new Event('adobe_dc_view_sdk.ready'));
+              }
+              window.addEventListener('load', function() {
+                if (window.AdobeDC) {
+                  console.log('[ROOT LAYOUT] Adobe SDK loaded after page load');
+                  document.dispatchEvent(new Event('adobe_dc_view_sdk.ready'));
+                }
+              });
+            `,
           }}
         />
       </head>
