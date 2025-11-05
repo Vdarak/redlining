@@ -116,7 +116,7 @@ export function useAdobePDF({
         console.warn('Cannot register user profile - Adobe Enum not available');
       }
 
-      // Configure preview options
+      // Configure preview options - memoized to avoid recreation
       const previewConfig = {
         embedMode: 'FULL_WINDOW',
         showAnnotationTools: true,
@@ -180,7 +180,7 @@ export function useAdobePDF({
     } finally {
       setIsInitializing(false);
     }
-  }, [isSDKReady, clientId, fileName, fileUrl, filePromise, userProfile, isInitializing]);
+  }, [isSDKReady, clientId, fileName, fileUrl, filePromise, userProfile]);
 
   return {
     isSDKReady,
