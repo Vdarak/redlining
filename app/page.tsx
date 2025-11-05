@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FileUpload } from '@/components/upload/FileUpload';
 import { PDFViewerContainer } from '@/components/pdf-viewer/PDFViewerContainer';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import { AdobeDebugger } from '@/components/AdobeDebugger';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -36,6 +37,7 @@ export default function Home() {
   if (showViewer && uploadedFile) {
     return (
       <>
+        <AdobeDebugger />
         <Button
           onClick={handleBack}
           className="absolute top-4 left-4 z-50 bg-primary-800 hover:bg-primary-900"
