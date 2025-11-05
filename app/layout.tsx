@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { Inter } from 'next/font/google'
 import './globals.css'
 
@@ -19,6 +20,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          src="https://acrobatservices.adobe.com/view-sdk/viewer.js"
+          strategy="beforeInteractive"
+          crossOrigin="anonymous"
+          onLoad={() => {
+            console.log('[ROOT LAYOUT] Adobe SDK script loaded successfully');
+            if ((window as any).AdobeDC) {
+              console.log('[ROOT LAYOUT] AdobeDC is available immediately');
+              document.dispatchEvent(new Event('adobe_dc_view_sdk.ready'));
+            }
+          }}
+          onError={() => {
+            console.error('[ROOT LAYOUT] Adobe SDK script failed to load');
+          }}
+        />
+      </head>
       <body className={inter.className}>
         {children}
       </body>
