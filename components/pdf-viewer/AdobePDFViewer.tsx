@@ -9,15 +9,46 @@ interface AdobePDFViewerProps {
 }
 
 export function AdobePDFViewer({ clientId, onSDKReady }: AdobePDFViewerProps) {
+  const handleScriptLoad = () => {
+    console.log('[AdobePDFViewer] Script tag onLoad fired');
+    // Force check multiple times since script execution timing is unpredictable
+    let attempts = 0;
+    const checkAdobeDC = setInterval(() => {
+      attempts++;
+      console.log(`[AdobePDFViewer] Checking AdobeDC availability (attempt ${attempts})`);
+      
+      if ((window as any).AdobeDC && (window as any).AdobeDC.View) {
+        console.log('[AdobePDFViewer] ✓ AdobeDC and AdobeDC.View found!');
+        clearInterval(checkAdobeDC);
+        document.dispatchEvent(new Event('adobe_dc_view_sdk.ready'));
+      } else if (attempts > 10) {
+        clearInterval(checkAdobeDC);
+        console.warn('[AdobePDFViewer] ✗ AdobeDC.View not found after 10 checks');
+      }
+    }, 100);
+  };
+
+  const handleScriptError = () => {
+    console.error('[AdobePDFViewer] Script failed to load from CDN');
+  };
+
   useEffect(() => {
-    console.log('[AdobePDFViewer] Component mounted');
+    console.log('[AdobePDFViewer] Component mounted, clientId:', clientId);
     
     const handleSDKReady = () => {
       console.log('[AdobePDFViewer] Adobe DC View SDK is ready');
-      // Initialize Adobe DC View with client ID
-      if (window.AdobeDC) {
-        console.log('[AdobePDFViewer] AdobeDC is available');
-        onSDKReady?.();
+      if ((window as any).AdobeDC) {
+        console.log('[AdobePDFViewer] AdobeDC is available, initializing with clientId');
+        try {
+          const clientConfig = {
+            clientId: clientId,
+          };
+          (window as any).AdobeDC.View.setClientId(clientConfig);
+          console.log('[AdobePDFViewer] AdobeDC setClientId called successfully');
+          onSDKReady?.();
+        } catch (error) {
+          console.error('[AdobePDFViewer] Error setting client ID:', error);
+        }
       } else {
         console.warn('[AdobePDFViewer] AdobeDC is NOT available yet');
       }
@@ -25,32 +56,18 @@ export function AdobePDFViewer({ clientId, onSDKReady }: AdobePDFViewerProps) {
 
     document.addEventListener('adobe_dc_view_sdk.ready', handleSDKReady);
     
-    // Also check if already loaded
+    // Check if already loaded before script tag even runs
     setTimeout(() => {
-      if (window.AdobeDC) {
-        console.log('[AdobePDFViewer] Adobe already loaded, firing ready event');
+      if ((window as any).AdobeDC && (window as any).AdobeDC.View) {
+        console.log('[AdobePDFViewer] Adobe already loaded before script tag, firing ready event');
         handleSDKReady();
       }
-    }, 500);
+    }, 100);
 
     return () => {
       document.removeEventListener('adobe_dc_view_sdk.ready', handleSDKReady);
     };
-  }, [onSDKReady]);
-
-  const handleScriptLoad = () => {
-    console.log('[AdobePDFViewer] Script tag onLoad fired');
-    if (window.AdobeDC) {
-      console.log('[AdobePDFViewer] AdobeDC available after script load');
-      document.dispatchEvent(new Event('adobe_dc_view_sdk.ready'));
-    } else {
-      console.warn('[AdobePDFViewer] AdobeDC NOT available after script load');
-    }
-  };
-
-  const handleScriptError = () => {
-    console.error('[AdobePDFViewer] Script failed to load from CDN');
-  };
+  }, [clientId, onSDKReady]);
 
   return (
     <>
@@ -60,6 +77,7 @@ export function AdobePDFViewer({ clientId, onSDKReady }: AdobePDFViewerProps) {
         onLoad={handleScriptLoad}
         onError={handleScriptError}
         crossOrigin="anonymous"
+        nonce="adobe-sdk"
       />
       <div id="adobe-dc-view" className="w-full h-full" />
     </>
