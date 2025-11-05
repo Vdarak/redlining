@@ -12,27 +12,16 @@ export function AdobePDFViewer({ clientId, onSDKReady }: AdobePDFViewerProps) {
     console.log('[AdobePDFViewer] Component mounted, clientId:', clientId);
     
     const handleSDKReady = () => {
-      console.log('[AdobePDFViewer] Adobe DC View SDK is ready');
+      console.log('[AdobePDFViewer] Adobe SDK is ready');
       if ((window as any).AdobeDC) {
-        console.log('[AdobePDFViewer] AdobeDC is available, initializing with clientId');
-        try {
-          const clientConfig = {
-            clientId: clientId,
-          };
-          (window as any).AdobeDC.View.setClientId(clientConfig);
-          console.log('[AdobePDFViewer] AdobeDC setClientId called successfully');
-          onSDKReady?.();
-        } catch (error) {
-          console.error('[AdobePDFViewer] Error setting client ID:', error);
-        }
-      } else {
-        console.warn('[AdobePDFViewer] AdobeDC is NOT available yet');
+        console.log('[AdobePDFViewer] AdobeDC is available');
+        onSDKReady?.();
       }
     };
 
     // Check if already loaded (from root layout script)
     if ((window as any).AdobeDC && (window as any).AdobeDC.View) {
-      console.log('[AdobePDFViewer] Adobe SDK already loaded, initializing immediately');
+      console.log('[AdobePDFViewer] Adobe SDK already loaded');
       handleSDKReady();
     } else {
       console.log('[AdobePDFViewer] Waiting for adobe_dc_view_sdk.ready event');

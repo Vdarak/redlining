@@ -94,18 +94,26 @@ export function useAdobePDF({
 
       console.log('Adobe View created');
 
-      // Register user profile if provided
-      if (userProfile) {
-        adobeDCViewRef.current.registerCallback(
-          window.AdobeDC!.Enum.CallbackType.GET_USER_PROFILE_API,
-          () => {
-            return Promise.resolve({
-              code: window.AdobeDC!.Enum.ApiResponseCode.SUCCESS,
-              data: { userProfile },
-            });
-          },
-          {}
-        );
+      // Register user profile if provided (only if Enum is available)
+      if (userProfile && window.AdobeDC?.Enum?.CallbackType) {
+        try {
+          adobeDCViewRef.current.registerCallback(
+            window.AdobeDC.Enum.CallbackType.GET_USER_PROFILE_API,
+            () => {
+              return Promise.resolve({
+                code: window.AdobeDC!.Enum.ApiResponseCode.SUCCESS,
+                data: { userProfile },
+              });
+            },
+            {}
+          );
+          console.log('User profile registered');
+        } catch (profileError) {
+          console.warn('Failed to register user profile:', profileError);
+          // Continue without user profile - it's optional
+        }
+      } else if (userProfile) {
+        console.warn('Cannot register user profile - Adobe Enum not available');
       }
 
       // Configure preview options
